@@ -1,22 +1,88 @@
+from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException
+import math
+import time
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from .locators import BasePageLocators
 
-class BasePage:
+
+class BasePage():
     def __init__(self, browser, url, timeout=10):
         self.browser = browser
         self.url = url
-        self.timeout = timeout
+        self.browser.implicitly_wait(timeout)
+
 
     def open(self):
         self.browser.get(self.url)
 
-    def click_when_clickable(self, by_locator):
-        WebDriverWait(self.browser, self.timeout).until(
-            EC.element_to_be_clickable(by_locator)
-        ).click()
+    def is_element_present(self, how, what):
+        try:
+            self.browser.find_element(how, what)
+        except NoSuchElementException:
+            return False
+        return True
 
-    def should_url_contain(self, text):
-        WebDriverWait(self.browser, self.timeout).until(
-            EC.url_contains(text)
-        )
-        assert text in self.browser.current_url.lower()
+    def solve_quiz_and_get_code(self):
+        alert = self.browser.switch_to.alert
+        x = alert.text.split(" ")[2]
+        answer = str(math.log(abs((12 * math.sin(float(x))))))
+        alert.send_keys(answer)
+        alert.accept()
+        try:
+            alert = self.browser.switch_to.alert
+            alert_text = alert.text
+            print(f"\n=== ALERT TEXT: {alert_text} ===\n")  # тут будет видно число
+            time.sleep(10)
+            alert.accept()
+        except NoAlertPresentException:
+            print("No second alert presented")
+
+
+
+    def is_not_element_present(self,how,what,timeout=4):
+        try:
+            WebDriverWait(self.browser, timeout).until(
+                EC.presence_of_element_located((how, what))
+            )
+        except TimeoutException:
+            return True
+
+        return False
+
+
+    def is_disappeared(self, how, what, timeout=4):
+        try:
+            WebDriverWait(self.browser, timeout, 1, TimeoutException).until_not(
+                EC.presence_of_element_located((how, what))
+            )
+        except TimeoutException:
+            return False
+
+        return True
+
+
+    def go_to_login_page(self):
+        link = self.browser.find_element(*BasePageLocators.LOGIN_LINK)
+        link.click()
+
+    def should_be_login_link(self):
+        assert self.is_element_present(*BasePageLocators.LOGIN_LINK), "Login link is not presented"
+
+
+    def go_to_basket(self):
+        self.browser.find_element(*BasePageLocators.BASKET_LINK).click()
+
+
+
+    def should_be_authorized_user(self):
+        assert self.is_element_present(*BasePageLocators.USER_ICON), "User icon is not presented," \
+                                                                     " probably unauthorised user"
+
+
+
+
+
+
+
