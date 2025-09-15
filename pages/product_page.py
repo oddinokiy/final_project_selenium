@@ -5,7 +5,9 @@ from selenium.webdriver.support import expected_conditions as EC
 
 class ProductPage(BasePage):
     def add_to_basket(self):
-         self.browser.find_element(*ProductPageLocators.BASKET_BUTTON).click()
+        WebDriverWait(self.browser, 10).until(
+            EC.element_to_be_clickable(ProductPageLocators.BASKET_BUTTON)
+        ).click()
 
     def should_be_product_name_correct(self):
         element = self.browser.find_element(*ProductPageLocators.PRODUCT_NAME)
