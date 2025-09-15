@@ -1,2 +1,3 @@
-# final_project_selenium
-Completion of the final project for the Stepik AUTO+SELENIUM+PYTHON course
+# Final project: Selenium + Python
+This is the final project for Stepik course.
+Run tests: `pytest -v --tb=line --language=en -m need_review`
